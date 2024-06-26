@@ -1,5 +1,7 @@
 #!/bin/rc
 
+./clean.rc
+
 pf=./external/PixelForge
 
 files=`{ls *.c | grep -v raudio | grep -v temp }
@@ -7,7 +9,9 @@ files=`{ls *.c | grep -v raudio | grep -v temp }
 fn pf {
   cwd=`{pwd}
   cd $pf
-  ape/cc -O3 -c `{walk | grep '\.c$'}
+  F=`{walk | grep '\.c$'}
+  ape/cc -O3 -c $F
+  echo AR libpf.a
   ar cr libpf.a *.o
   cd $cwd
   cp $pf/libpf.a libpf.a
@@ -62,12 +66,15 @@ fn rl {
      '-DPF_PACK_ALIGNMENT=0'
 
   }
+  echo AR libraylib.a
   ar cr libraylib.a `{ls *.6 | grep -v nsec } external/PixelForge/*.o
 }
 
 pf
 rl
 
+echo BUILD temp
 pcc -o temp -I. temp.c libraylib.a
+echo BUILD temp2
 pcc -o temp2 -I. temp2.c libraylib.a 
 

@@ -3357,11 +3357,9 @@ rlCheckRenderBatchLimit(int vCount)
 //-----------------------------------------------------------------------------------------
 // Convert image data to OpenGL texture (returns id)
 unsigned int
-rlLoadTexture(const void *_data, int width, int height, int format, int mipmapCount)
+rlLoadTexture(const void *data, int width, int height, int format, int mipmapCount)
 {
   unsigned int id, sz = rlGetPixelDataSize(width, height, format);
-  void *data = malloc(sz);
-  memcpy(data, _data, sz);
   PFtexture *v = malloc(sizeof(PFtexture));
   *v = pfGenTexture(data, width, height, format);
   id = pfStoreTexture(v);

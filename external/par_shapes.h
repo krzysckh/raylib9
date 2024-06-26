@@ -134,8 +134,6 @@ par_shapes_mesh* par_shapes_create_rock(int seed, int nsubdivisions);
 par_shapes_mesh* par_shapes_create_lsystem(char const* program, int slices,
     int maxdepth);
 
-static par_shapes_mesh* par_shapes__create_turtle();
-par_shapes_mesh* par_shapes_create_icosahedron();
 // Queries ---------------------------------------------------------------------
 
 // Dump out a text file conforming to the venerable OBJ format.
@@ -1220,6 +1218,9 @@ void par_shapes__connect(par_shapes_mesh* scene, par_shapes_mesh* cylinder,
     scene->npoints = npoints;
     scene->ntriangles = ntriangles;
 }
+
+static par_shapes_mesh* par_shapes__create_turtle();
+par_shapes_mesh* par_shapes_create_icosahedron();
 
 par_shapes_mesh* par_shapes_create_lsystem(char const* text, int slices,
     int maxdepth)

@@ -1,5 +1,9 @@
 /**
  *  Copyright (c) 2024 Le Juez Victor
+ *  Copyright (c) 2024 Krzysztof Michalczyk <kpm@linux.pl>
+ *
+ *  This is an altered version of PixelForge context.c originally written by Le Juez Victor.
+ *  ----------------------------------------------------------------------------------------
  *
  *  This software is provided "as-is", without any express or implied warranty. In no event 
  *  will the authors be held liable for any damages arising from the use of this software.

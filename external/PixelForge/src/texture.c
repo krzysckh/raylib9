@@ -1,5 +1,9 @@
 /**
  *  Copyright (c) 2024 Le Juez Victor
+ *  Copyright (c) 2024 Krzysztof Michalczyk <kpm@linux.pl>
+ *
+ *  This is an altered version of PixelForge texture.c originally written by Le Juez Victor.
+ *  ----------------------------------------------------------------------------------------
  *
  *  This software is provided "as-is", without any express or implied warranty. In no event 
  *  will the authors be held liable for any damages arising from the use of this software.
@@ -211,8 +215,9 @@ static PFcolor GetR5G6B5(const void* pixels, PFsizei offset)
 
 static PFcolor GetR8G8B8(const void* pixels, PFsizei offset)
 {
-    const PFubyte* pixel = (PFubyte*)pixels + offset*3;
-    return (PFcolor) { pixel[0], pixel[1], pixel[2], 255 };
+    const PFubyte* vs = pixels;
+    return (PFcolor) { vs[(offset*3)+1], vs[(offset*3)+1], vs[(offset*3)+0], 255 };
+    return (PFcolor) { vs[(offset*3)+0], vs[(offset*3)+1], vs[(offset*3)+2], 255 };
 }
 
 static PFcolor GetR5G5B5A1(const void* pixels, PFsizei offset)

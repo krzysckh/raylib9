@@ -53,6 +53,7 @@
 #define RAYMATH_H
 
 #include "m.h"
+#include <string.h>
 
 #ifndef GETS
 #ifndef RL_NO_STRUCT

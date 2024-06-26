@@ -29,6 +29,8 @@
 *
 **********************************************************************************************/
 
+#include <stdio.h>
+#include <stdlib.h>
 #include "raylib.h"                     // WARNING: Required for: LogType enum
 
 // Check if config flags have been externally provided on compilation line

@@ -59,7 +59,7 @@
 #include <float.h>      // Required for: FLT_EPSILON
 #include <stdlib.h>     // Required for: RL_FREE
 
-#ifndef
+#ifndef SUPPORT_QUADS_DRAW_MODE
 #define SUPPORT_QUADS_DRAW_MODE
 #endif
 
