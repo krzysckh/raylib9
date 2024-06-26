@@ -1,0 +1,14 @@
+This is an ongoing effort to port raylib to plan9.
+This is *not* a fast library.
+
+It uses PixelForge software renderer to emulate OpenGL.
+
+so basically:
+  raylib core modules <-> rlgl <-> PixelForge <-> platforms/rcore_9.c <-> libdraw <-> you
+
+% clean.rc
+% build.rc
+% temp
+q
+% temp2
+

@@ -1,0 +1,4 @@
+#!/bin/rc
+
+walk | grep '\.[1-9oa]' | xargs rm
+rm -f temp temp2

@@ -1,0 +1,73 @@
+#!/bin/rc
+
+pf=./external/PixelForge
+
+files=`{ls *.c | grep -v raudio | grep -v temp }
+
+fn pf {
+  cwd=`{pwd}
+  cd $pf
+  ape/cc -O3 -c `{walk | grep '\.c$'}
+  ar cr libpf.a *.o
+  cd $cwd
+  cp $pf/libpf.a libpf.a
+}
+
+fn rl {
+  for (f in $files) {
+    echo CC $f
+    pcc -c $f -I$pf/src \
+     '-VF' \
+     '-D_PLAN9_SOURCE' \
+     '-DPLATFORM_9' \
+     '-DGRAPHICS_API_OPENGL_11' \
+     '-DPF_ONE_MINUS_SRC_ALPHA=0' \
+     '-DPF_NICEST=0' \
+     '-DpfTexParameteri=(void)0;' \
+     '-DpfTexImage2D=(void)0;' \
+     '-DpfPixelStorei=(void)0;' \
+     '-DpfGenTextures=(void)0;' \
+     '-DpfGetTexImage=(void)0;' \
+     '-DpfTexSubImage2D=(void)0;' \
+     '-DpfDeleteTextures=(void)0;' \
+     '-DpfEnableClientState=(void)0;' \
+     '-D_pfTexCoordPointer=(void)0;' \
+     '-DpfDisableClientState=(void)0;' \
+     '-D_pfReadPixels=(void)0;' \
+     '-D_pfBindTexture=(void)0;' \
+     '-D_pfDepthMask=(void)0;' \
+     '-D_pfColorMask=(void)0;' \
+     '-D_pfScissor=(void)0;' \
+     '-D_pfDepthFunc=(void)0;' \
+     '-D_pfFrontFace=(void)0;' \
+     '-D_pfBlendFunc=(void)0;' \
+     '-D_pfHint=(void)0;' \
+     '-DPF_LUMINANCE=0' \
+     '-DPF_LUMINANCE_ALPHA=0' \
+     '-DPF_NEAREST=0' \
+     '-DPF_REPEAT=0' \
+     '-DPF_RGBA=0' \
+     '-DPF_RGB=0' \
+     '-DPF_TEXTURE_MAG_FILTER=0' \
+     '-DPF_TEXTURE_MIN_FILTER=0' \
+     '-DPF_TEXTURE_WRAP_S=0' \
+     '-DPF_TEXTURE_WRAP_T=0' \
+     '-DPF_SCISSOR_TEST=0' \
+     '-DPF_LINE_SMOOTH=0' \
+     '-DPF_LEQUAL=0' \
+     '-DPF_SRC_ALPHA=0' \
+     '-DPF_CCW=0' \
+     '-DPF_PERSPECTIVE_CORRECTION_HINT=0' \
+     '-DPF_UNPACK_ALIGNMENT=0' \
+     '-DPF_PACK_ALIGNMENT=0'
+
+  }
+  ar cr libraylib.a `{ls *.6 | grep -v nsec } external/PixelForge/*.o
+}
+
+pf
+rl
+
+pcc -o temp -I. temp.c libraylib.a
+pcc -o temp2 -I. temp2.c libraylib.a 
+
