@@ -7,9 +7,7 @@ main(int argc, char **argv)
 {
   InitWindow(500, 500, "helo");
 
-  Image i = LoadImage("g.png");
   Texture2D t = LoadTexture("g.png");
-  ExportImage(i, "g.jpg");
 
   SetTargetFPS(30);
   while (!WindowShouldClose()) {
@@ -20,6 +18,12 @@ main(int argc, char **argv)
       ClearBackground(BLACK);
       DrawTexture(t, 0, 0, WHITE);
       DrawRectangleLines(0, 0, 172, 187, RED);
+      if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+        DrawCircleV(GetMousePosition(), 16, RED);
+      if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+        DrawCircleV(GetMousePosition(), 16, BLUE);
+      if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+        DrawCircleV(GetMousePosition(), 16, ORANGE);
     }
     EndDrawing();
   }

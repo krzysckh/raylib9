@@ -395,10 +395,6 @@ PollInputEvents(void)
   // Reset key repeats
   for (int i = 0; i < MAX_KEYBOARD_KEYS; i++) CORE.Input.Keyboard.keyRepeatInFrame[i] = 0;
 
-  CORE.Input.Gamepad.lastButtonPressed = 0;
-
-  for (int i = 0; i < MAX_TOUCH_POINTS; i++) CORE.Input.Touch.previousTouchState[i] = CORE.Input.Touch.currentTouchState[i];
-
   for (int i = 0; i < 260; i++) {
     CORE.Input.Keyboard.previousKeyState[i] = CORE.Input.Keyboard.currentKeyState[i];
     CORE.Input.Keyboard.keyRepeatInFrame[i] = 0;
@@ -406,6 +402,10 @@ PollInputEvents(void)
   }
 
   int w = CORE.Window.screen.width, h = CORE.Window.screen.height;
+  CORE.Input.Mouse.previousButtonState[MOUSE_BUTTON_LEFT]   = CORE.Input.Mouse.currentButtonState[MOUSE_BUTTON_LEFT];
+  CORE.Input.Mouse.previousButtonState[MOUSE_BUTTON_RIGHT]  = CORE.Input.Mouse.currentButtonState[MOUSE_BUTTON_RIGHT];
+  CORE.Input.Mouse.previousButtonState[MOUSE_BUTTON_MIDDLE] = CORE.Input.Mouse.currentButtonState[MOUSE_BUTTON_MIDDLE];
+
 
   Event e;
   int key;

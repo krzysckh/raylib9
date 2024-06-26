@@ -216,7 +216,6 @@ static PFcolor GetR5G6B5(const void* pixels, PFsizei offset)
 static PFcolor GetR8G8B8(const void* pixels, PFsizei offset)
 {
     const PFubyte* vs = pixels;
-    return (PFcolor) { vs[(offset*3)+1], vs[(offset*3)+1], vs[(offset*3)+0], 255 };
     return (PFcolor) { vs[(offset*3)+0], vs[(offset*3)+1], vs[(offset*3)+2], 255 };
 }
 
