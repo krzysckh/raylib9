@@ -1,5 +1,9 @@
 /**
  *  Copyright (c) 2024 Le Juez Victor
+ *  Copyright (c) 2024 Krzysztof Michalczyk <kpm@linux.pl>
+ *
+ *  This is an altered version of PixelForge context.c originally written by Le Juez Victor.
+ *  ----------------------------------------------------------------------------------------
  *
  *  This software is provided "as-is", without any express or implied warranty. In no event 
  *  will the authors be held liable for any damages arising from the use of this software.
@@ -224,6 +228,8 @@ void Rasterize_Line_NODEPTH(const PFvertex* v1, const PFvertex* v2)
         yLonger = 1;
     }
 
+    // ICANT
+    if (longLen == 0.f) longLen = 0.1;
     PFfloat invEndVal = 1.0f/longLen;
     PFint endVal = longLen;
     PFint sgnInc = 1;
@@ -234,7 +240,7 @@ void Rasterize_Line_NODEPTH(const PFvertex* v1, const PFvertex* v2)
         sgnInc = -1;
     }
 
-    PFint decInc = (longLen == 0) ? 0
+    PFint decInc = (longLen == 0.f) ? 0
         : (shortLen << 16) / longLen;
 
     PFint j = 0;
@@ -317,18 +323,18 @@ void Rasterize_Line_DEPTH(const PFvertex* v1, const PFvertex* v2)
         yLonger = 1;
     }
 
-    PFfloat invEndVal = 1.0f/longLen;
+    PFfloat invEndVal = 1.0f/(longLen == 0.f ? 0.2 : longLen);
     PFint endVal = longLen;
     PFint sgnInc = 1;
 
-    if (longLen < 0)
+    if (longLen < 0.f)
     {
         longLen = -longLen;
         sgnInc = -1;
     }
 
-    PFint decInc = (longLen == 0) ? 0
-        : (shortLen << 16) / longLen;
+    PFint decInc = ((PFint)longLen == 0) ? 0
+        : (PFint)(shortLen << 16) / (PFint)longLen;
 
     PFint j = 0;
     if (yLonger)
@@ -510,6 +516,7 @@ static PFboolean Helper_ClipCoord3D(PFfloat q, PFfloat p, PFfloat* t1, PFfloat* 
         return PF_FALSE;
     }
 
+    if (p == 0.f) return PF_FALSE;
     const PFfloat r = q / p;
 
     if (p < 0)

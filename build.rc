@@ -77,4 +77,6 @@ echo BUILD temp
 pcc -o temp -I. temp.c libraylib.a
 echo BUILD temp2
 pcc -o temp2 -I. temp2.c libraylib.a 
+echo BUILD temp3
+pcc -o temp3 -Iexternal/PixelForge/src -I. temp3.c libraylib.a 
 

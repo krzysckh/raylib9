@@ -245,10 +245,9 @@ static PFcolor GetR4G4B4A4(const void* pixels, PFsizei offset)
 
 static PFcolor GetR8G8B8A8(const void* pixels, PFsizei offset)
 {
-    if (pixels)
-      return ((PFcolor*)pixels)[offset];
-    PFcolor c = {0,0,0,0};
-    return c;
+    // 6c was aligning PFcolor to 8 bytes
+    PFubyte *c = ((PFubyte*)pixels) + (offset*4);
+    return (PFcolor){c[0], c[1], c[2], c[3]};
 }
 
 static PFcolor GetR32(const void* pixels, PFsizei offset)

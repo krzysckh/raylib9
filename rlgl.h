@@ -107,6 +107,8 @@
 #ifndef RLGL_H
 #define RLGL_H
 
+#include "raylib.h"
+
 #ifndef RL_NO_STRUCT
 #define MKSTRUCT(x,y) typedef struct x y x
 #define GETS(x) x
@@ -155,7 +157,6 @@
 
 #include "pixelforge.h"
 #define pfGetString(x) (#x)
-#define pfDisable(x) (void)"No."
 
 // Security check in case no GRAPHICS_API_OPENGL_* defined
 #if !defined(GRAPHICS_API_OPENGL_11) && \
@@ -462,17 +463,17 @@ typedef enum {
 #define RL_PIXELFORMAT_UNCOMPRESSED_R16G16B16   PF_PIXELFORMAT_R16G16B16         // 16*3 bpp (3 channels - half float)
 #define RL_PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 PF_PIXELFORMAT_R16G16B16A16      // 16*4 bpp (4 channels - half float)
 
-#define  RL_PIXELFORMAT_COMPRESSED_DXT1_RGB  0
-#define  RL_PIXELFORMAT_COMPRESSED_DXT1_RGBA 0
-#define  RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA 0
-#define  RL_PIXELFORMAT_COMPRESSED_DXT5_RGBA 0
-#define  RL_PIXELFORMAT_COMPRESSED_ETC1_RGB 0
-#define  RL_PIXELFORMAT_COMPRESSED_ETC2_RGB 0
-#define  RL_PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA 0
-#define  RL_PIXELFORMAT_COMPRESSED_PVRT_RGB 0
-#define  RL_PIXELFORMAT_COMPRESSED_PVRT_RGBA 0
-#define  RL_PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA 0
-#define  RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA 0
+#define  RL_PIXELFORMAT_COMPRESSED_DXT1_RGB  128
+#define  RL_PIXELFORMAT_COMPRESSED_DXT1_RGBA 128
+#define  RL_PIXELFORMAT_COMPRESSED_DXT3_RGBA 128
+#define  RL_PIXELFORMAT_COMPRESSED_DXT5_RGBA 128
+#define  RL_PIXELFORMAT_COMPRESSED_ETC1_RGB 128
+#define  RL_PIXELFORMAT_COMPRESSED_ETC2_RGB 128
+#define  RL_PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA 128
+#define  RL_PIXELFORMAT_COMPRESSED_PVRT_RGB 128
+#define  RL_PIXELFORMAT_COMPRESSED_PVRT_RGBA 128
+#define  RL_PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA 128
+#define  RL_PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA 128
 
 // Texture parameters: filter mode
 // NOTE 1: Filtering considers mipmaps if available in the texture
@@ -2256,57 +2257,23 @@ rlCheckErrors(void)
 void
 rlSetBlendMode(int mode)
 {
-#if defined(GRAPHICS_API_OPENGL_33) || defined(GRAPHICS_API_OPENGL_ES2)
-  if ((RLGL.State.currentBlendMode != mode) || ((mode == RL_BLEND_CUSTOM || mode == RL_BLEND_CUSTOM_SEPARATE) && RLGL.State.pfCustomBlendModeModified)) {
-    rlDrawRenderBatch(RLGL.currentBatch);
-
-    switch (mode) {
-    case RL_BLEND_ALPHA:
-      pfBlendFunc(PF_SRC_ALPHA, PF_ONE_MINUS_SRC_ALPHA);
-      pfBlendEquation(PF_FUNC_ADD);
-      break;
-    case RL_BLEND_ADDITIVE:
-      pfBlendFunc(PF_SRC_ALPHA, PF_ONE);
-      pfBlendEquation(PF_FUNC_ADD);
-      break;
-    case RL_BLEND_MULTIPLIED:
-      pfBlendFunc(PF_DST_COLOR, PF_ONE_MINUS_SRC_ALPHA);
-      pfBlendEquation(PF_FUNC_ADD);
-      break;
-    case RL_BLEND_ADD_COLORS:
-      pfBlendFunc(PF_ONE, PF_ONE);
-      pfBlendEquation(PF_FUNC_ADD);
-      break;
-    case RL_BLEND_SUBTRACT_COLORS:
-      pfBlendFunc(PF_ONE, PF_ONE);
-      pfBlendEquation(PF_FUNC_SUBTRACT);
-      break;
-    case RL_BLEND_ALPHA_PREMULTIPLY:
-      pfBlendFunc(PF_ONE, PF_ONE_MINUS_SRC_ALPHA);
-      pfBlendEquation(PF_FUNC_ADD);
-      break;
-    case RL_BLEND_CUSTOM: {
-      // NOTE: Using PF blend src/dst factors and PF equation configured with rlSetBlendFactors()
-      pfBlendFunc(RLGL.State.pfBlendSrcFactor, RLGL.State.pfBlendDstFactor);
-      pfBlendEquation(RLGL.State.pfBlendEquation);
-
-    }
+  switch (mode) {
+  case RL_BLEND_ALPHA:
+    pfBlendFunc(pfBlendAlpha);
     break;
-    case RL_BLEND_CUSTOM_SEPARATE: {
-      // NOTE: Using PF blend src/dst factors and PF equation configured with rlSetBlendFactorsSeparate()
-      pfBlendFuncSeparate(RLGL.State.pfBlendSrcFactorRGB, RLGL.State.pfBlendDestFactorRGB, RLGL.State.pfBlendSrcFactorAlpha, RLGL.State.pfBlendDestFactorAlpha);
-      pfBlendEquationSeparate(RLGL.State.pfBlendEquationRGB, RLGL.State.pfBlendEquationAlpha);
-
-    }
+  case RL_BLEND_ADDITIVE:
+    pfBlendFunc(pfBlendAdditive);
     break;
-    default:
-      break;
-    }
-
-    RLGL.State.currentBlendMode = mode;
-    RLGL.State.pfCustomBlendModeModified = false;
+  case RL_BLEND_SUBTRACT_COLORS:
+    pfBlendFunc(pfBlendSubtractive);
+    break;
+  case RL_BLEND_MULTIPLIED:
+    pfBlendFunc(pfBlendMultiplicative);
+    break;
+  default:
+    pfBlendFunc(pfBlend);
+    break;
   }
-#endif
 }
 
 // Set blending mode factor and equation
@@ -2505,7 +2472,7 @@ rlglInit(int width, int height)
   //----------------------------------------------------------
   // Init state: Depth test
   _pfDepthFunc(PF_LEQUAL);                                 // Type of depth testing to apply
-  pfDisable(PF_DEPTH_TEST);                               // Disable depth testing for 2D (only used for 3D)
+  //|pfDisable(PF_DEPTH_TEST);                               // Disable depth testing for 2D (only used for 3D)
 
   // Init state: Blending mode
   _pfBlendFunc(PF_SRC_ALPHA, PF_ONE_MINUS_SRC_ALPHA);      // Color blending function (how colors are mixed)
@@ -2517,29 +2484,12 @@ rlglInit(int width, int height)
   _pfFrontFace(PF_CCW);                                    // Front face are defined counter clockwise (default)
   pfEnable(PF_CULL_FACE);                                 // Enable backface culling
 
-  // Init state: Cubemap seamless
-#if defined(GRAPHICS_API_OPENGL_33)
-  pfEnable(PF_TEXTURE_CUBE_MAP_SEAMLESS);                 // Seamless cubemaps (not supported on OpenGL ES 2.0)
-#endif
-
-#if defined(GRAPHICS_API_OPENGL_11)
-  // Init state: Color hints (deprecated in OpenGL 3.0+)
   _pfHint(PF_PERSPECTIVE_CORRECTION_HINT, PF_NICEST);      // Improve quality of color and texture coordinate interpolation
   pfShadeModel(PF_SMOOTH);                                // Smooth shading between vertex (vertex colors interpolation)
-#endif
-
-#if defined(GRAPHICS_API_OPENGL_33) || defined(GRAPHICS_API_OPENGL_ES2)
-  // Store screen size into pfobal variables
-  RLGL.State.framebufferWidth = width;
-  RLGL.State.framebufferHeight = height;
-
-  TRACELOG(RL_LOG_INFO, "RLGL: Default OpenGL state initialized successfully");
-  //----------------------------------------------------------
-#endif
 
   // Init state: Color/Depth buffers clear
   pfClearColor(0.0f, 0.0f, 0.0f, 1.0f);                   // Set clear color (black)
-  pfClearDepth(1.0f);                                     // Set clear depth value (default)
+  //|pfClearDepth(1.0f);                                     // Set clear depth value (default)
   pfClear(PF_COLOR_BUFFER_BIT | PF_DEPTH_BUFFER_BIT);     // Clear color and depth buffers (depth buffer required for 3D)
 }
 
@@ -3360,12 +3310,20 @@ unsigned int
 rlLoadTexture(const void *data, int width, int height, int format, int mipmapCount)
 {
   unsigned int id, sz = rlGetPixelDataSize(width, height, format);
+  GETS(Image) temp;
+  temp.data = malloc(sz);
+  temp.width = width, temp.height = height, temp.format = format, temp.mipmaps = mipmapCount;
+  memcpy(temp.data, data, sz);
+
+  ImageFormat(&temp, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+
   PFtexture *v = malloc(sizeof(PFtexture));
-  *v = pfGenTexture(data, width, height, format);
+  *v = pfGenTexture(temp.data, temp.width, temp.height, (PFpixelformat)temp.format);
   id = pfStoreTexture(v);
+  // we don't unload shit, because pfGenTexture doesn't copy the data
 
   TRACELOG(RL_LOG_INFO, "TEXTURE: [ID %d, PTR %p] Texture loaded successfully (%ix%i | %s)",
-           id, v, v->width, v->height, rlGetPixelFormatName(format));
+           id, v, v->width, v->height, rlGetPixelFormatName(temp.format));
 
   return id;
 }
