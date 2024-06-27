@@ -3098,5 +3098,6 @@ pfStoreTexture(PFtexture *p)
 PFtexture *
 pfGetTexture(unsigned int id)
 {
+  if (id == 0) return NULL;
   return t_store[id-1];
 }

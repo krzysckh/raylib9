@@ -1758,9 +1758,7 @@ rlActiveTextureSlot(int slot)
 void
 rlEnableTexture(unsigned int id)
 {
-#if defined(GRAPHICS_API_OPENGL_11)
   pfEnable(PF_TEXTURE_2D);
-#endif
   pfBindTexture(pfGetTexture(id));
 }
 
@@ -1768,10 +1766,8 @@ rlEnableTexture(unsigned int id)
 void
 rlDisableTexture(void)
 {
-#if defined(GRAPHICS_API_OPENGL_11)
-  pfDisable(PF_TEXTURE_2D);
-#endif
   pfBindTexture(NULL);
+  pfDisable(PF_TEXTURE_2D);
 }
 
 // Enable texture cubemap
@@ -3315,7 +3311,8 @@ rlLoadTexture(const void *data, int width, int height, int format, int mipmapCou
   temp.width = width, temp.height = height, temp.format = format, temp.mipmaps = mipmapCount;
   memcpy(temp.data, data, sz);
 
-  ImageFormat(&temp, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+  if (format != RL_PIXELFORMAT_UNCOMPRESSED_GRAYSCALE && format != RL_PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA)
+    ImageFormat(&temp, RL_PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
 
   PFtexture *v = malloc(sizeof(PFtexture));
   *v = pfGenTexture(temp.data, temp.width, temp.height, (PFpixelformat)temp.format);
@@ -4135,13 +4132,14 @@ rlDrawVertexArrayElementsInstanced(int offset, int count, const void *buffer, in
 void
 rlEnableStatePointer(int vertexAttribType, void *buffer)
 {
+  pfEnable(vertexAttribType);
   if (buffer != NULL) pfEnableClientState(vertexAttribType);
   switch (vertexAttribType) {
   case PF_VERTEX_ARRAY:
     pfVertexPointer(3, PF_FLOAT, 0, buffer);
     break;
   case PF_TEXTURE_COORD_ARRAY:
-    _pfTexCoordPointer(2, PF_FLOAT, 0, buffer);
+    pfTexCoordPointer(PF_FLOAT, 0, buffer);
     break;
   case PF_NORMAL_ARRAY:
     if (buffer != NULL) pfNormalPointer(PF_FLOAT, 0, buffer);
@@ -4159,7 +4157,7 @@ rlEnableStatePointer(int vertexAttribType, void *buffer)
 void
 rlDisableStatePointer(int vertexAttribType)
 {
-  pfDisableClientState(vertexAttribType);
+  pfDisable(vertexAttribType);
 }
 #endif
 

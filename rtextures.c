@@ -4001,12 +4001,18 @@ Texture2D LoadTextureFromImage(Image image)
     {
         texture.id = rlLoadTexture(image.data, image.width, image.height, image.format, image.mipmaps);
     }
-    else TRACELOG(LOG_WARNING, "IMAGE: Data is not valid to load texture");
+    else
+    {
+        TRACELOG(LOG_WARNING, "IMAGE: Data is not valid to load texture");
+        return texture;
+    }
 
-    texture.width = image.width;
-    texture.height = image.height;
+    PFtexture *t = pfGetTexture(texture.id);
+
+    texture.width = t->width;
+    texture.height = t->height;
     texture.mipmaps = image.mipmaps;
-    texture.format = image.format;
+    texture.format = t->format;
 
     return texture;
 }
@@ -4333,13 +4339,17 @@ void SetTextureWrap(Texture2D texture, int wrap)
 // Draw a texture
 void DrawTexture(Texture2D texture, int posX, int posY, Color tint)
 {
-    DrawTextureEx(texture, (Vector2){ (float)posX, (float)posY }, 0.0f, 1.0f, tint);
+    //DrawTextureEx(texture, (Vector2){ (float)posX, (float)posY }, 0.0f, 1.0f, tint);
+    DrawTextureV(texture, (Vector2){ (float)posX, (float)posY }, tint);
 }
 
 // Draw a texture with position defined as Vector2
-void DrawTextureV(Texture2D texture, Vector2 position, Color tint)
+void DrawTextureV(Texture2D texture, Vector2 pos, Color tint)
 {
-    DrawTextureEx(texture, position, 0, 1.0f, tint);
+    PFtexture *t = pfGetTexture(texture.id);
+
+    pfRasterPos2i((int)pos.x, (int)pos.y);
+    pfDrawPixels(t->width, t->height, t->format, t->pixels);
 }
 
 // Draw a texture with extended parameters

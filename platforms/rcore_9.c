@@ -395,7 +395,7 @@ PollInputEvents(void)
   // Reset key repeats
   for (int i = 0; i < MAX_KEYBOARD_KEYS; i++) CORE.Input.Keyboard.keyRepeatInFrame[i] = 0;
 
-  for (int i = 0; i < 260; i++) {
+  for (int i = 0; i < MAX_KEYBOARD_KEYS; i++) {
     CORE.Input.Keyboard.previousKeyState[i] = CORE.Input.Keyboard.currentKeyState[i];
     CORE.Input.Keyboard.keyRepeatInFrame[i] = 0;
     CORE.Input.Keyboard.currentKeyState[i] = 0;
