@@ -88,12 +88,14 @@ PFboolean Process_ProjectAndClipTriangle(PFvertex* polygon, int_fast8_t* vertexC
         for (int_fast8_t i = 0; i < *vertexCounter; i++)
         {
             // Calculation of the reciprocal of Z for the perspective correct
+            if (polygon[i].homogeneous[2] == 0.f) return PF_FALSE;
             polygon[i].homogeneous[2] = 1.0f / polygon[i].homogeneous[2];
 
             // Division of texture coordinates by the Z axis (perspective correct)
             pfmVec2Scale(polygon[i].texcoord, polygon[i].texcoord, polygon[i].homogeneous[2]);
 
             // Division of XY coordinates by weight
+            if (polygon[i].homogeneous[3] == 0.f) return PF_FALSE;
             PFfloat invW = 1.0f / polygon[i].homogeneous[3];
             polygon[i].homogeneous[0] *= invW;
             polygon[i].homogeneous[1] *= invW;

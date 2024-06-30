@@ -21,5 +21,4 @@ float acosf(float f);
 float asinf(float f);
 float ceilf(float f);
 float geilf(float f);
-void sysfatal(char *s);
 #endif //  _M_H_

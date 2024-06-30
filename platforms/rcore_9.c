@@ -11,6 +11,8 @@ static uint xr, yr;
 
 typedef struct {
   uchar *rgbuf;
+  PFcontext pctx;
+  int wctlfd;
 } PlatformData;
 
 extern CoreData CORE;
@@ -18,6 +20,33 @@ static PlatformData pdata = { 0 };
 
 int InitPlatform(void);
 bool InitGraphicsDevice(void);
+
+static void
+wresize(int x, int y, int w, int h)
+{
+  fprint(pdata.wctlfd, "resize -r %d %d %d %d\n", x, y, w+x, h+y);
+}
+
+static void
+set_pixel(void *buf_, PFsizei index, PFcolor color)
+{
+  uchar* buf = buf_;
+  buf[index*3]     = color.b;
+  buf[(index*3)+1] = color.g;
+  buf[(index*3)+2] = color.r;
+}
+
+static PFcolor
+get_pixel(void *buf_, PFsizei index)
+{
+  uchar* buf = buf_;
+  return (PFcolor) {
+    buf[(index*3)+2],
+    buf[(index*3)+1],
+    buf[(index*3)],
+    0xff
+  };
+}
 
 bool
 WindowShouldClose(void)
@@ -92,7 +121,8 @@ SetWindowTitle(const char *title)
 void
 SetWindowPosition(int x, int y)
 {
-  TRACELOG(LOG_WARNING, "SetWindowPosition() not available on target platform");
+  int w = CORE.Window.screen.width, h = CORE.Window.screen.height;
+  wresize(x, y, w, h);
 }
 
 void
@@ -236,7 +266,9 @@ GetWindowScaleDPI(void)
 void
 SetClipboardText(const char *text)
 {
-  TRACELOG(LOG_WARNING, "SetClipboardText() not implemented on target platform");
+  int fd = open("/dev/snarf", O_RDWR);
+  fprint(fd, text);
+  close(fd);
 }
 
 // Get clipboard text content
@@ -292,11 +324,13 @@ redraw(void)
   Rectangle r = Rect(0, 0, w, h);
   Image *i = allocimage(display, r, RGB24, 0, 0);
   if (i == nil) {
-    sysfatal("allocimage: %r");
+    printf("allocimage err\n");
+    abort();
   }
 
   if (loadimage(i, i->r, (void*)pdata.rgbuf, w*h*3) < 0) {
-    sysfatal("loadimage: %r");
+    printf("loadimage err\n");
+    abort();
   }
 
   //drawop(screen, Rect(xr, yr, w+xr, h+yr), i, nil, i->r.min, 0);
@@ -311,7 +345,8 @@ eresized(int new)
 {
   if (new && getwindow(display, Refnone) < 0) {
     fprintf(stderr, "can't reattach to window");
-    sysfatal("resize");
+    printf("resize err");
+    abort();
   }
 
   redraw();
@@ -451,44 +486,20 @@ PollInputEvents(void)
   }
 }
 
-static void
-set_pixel(void *buf_, PFsizei index, PFcolor color)
-{
-  uchar* buf = buf_;
-  buf[index*3]     = color.b;
-  buf[(index*3)+1] = color.g;
-  buf[(index*3)+2] = color.r;
-}
-
-static PFcolor
-get_pixel(void *buf_, PFsizei index)
-{
-  uchar* buf = buf_;
-  return (PFcolor) {
-    buf[(index*3)+2],
-    buf[(index*3)+1],
-    buf[(index*3)],
-    0xff
-  };
-}
-
 
 // Initialize platform: graphics, inputs and more
 int
 InitPlatform(void)
 {
+  int w = CORE.Window.screen.width, h = CORE.Window.screen.height;
+
   CORE.Window.fullscreen = false;
   CORE.Window.flags |= FLAG_FULLSCREEN_MODE;
 
-  // TODO: This can change
-  int w = CORE.Window.screen.width, h = CORE.Window.screen.height;
-  int fd = open("/dev/wctl", O_RDWR);
-  fprint(fd, "resize -r 10 10 %d %d\n", w+10, h+10);
-  close(fd);
+  pdata.wctlfd = open("/dev/wctl", O_RDWR);
   pdata.rgbuf = malloc(w*h*3);
-
-  PFcontext ctx = pfCreateContext(pdata.rgbuf, CORE.Window.screen.width, CORE.Window.screen.height, PF_PIXELFORMAT_R8G8B8A8);
-  pfMakeCurrent(ctx);
+  pdata.pctx = pfCreateContext(pdata.rgbuf, CORE.Window.screen.width, CORE.Window.screen.height, PF_PIXELFORMAT_R8G8B8);
+  pfMakeCurrent(pdata.pctx);
 
   pfSetDefaultPixelGetter(get_pixel);
   pfSetDefaultPixelSetter(set_pixel);
@@ -500,11 +511,6 @@ InitPlatform(void)
 
   CORE.Window.ready = true;
 
-  CORE.Window.render.width = CORE.Window.screen.width;
-  CORE.Window.render.height = CORE.Window.screen.height;
-  CORE.Window.currentFbo.width = CORE.Window.render.width;
-  CORE.Window.currentFbo.height = CORE.Window.render.height;
-
   CORE.Input.Mouse.offset.x = 0;
   CORE.Input.Mouse.offset.y = 0;
   CORE.Input.Mouse.scale.x  = 1;
@@ -514,6 +520,15 @@ InitPlatform(void)
   InitTimer();
 
   CORE.Storage.basePath = GetWorkingDirectory();
+
+  CORE.Window.screen.width = w;
+  CORE.Window.screen.height = h;
+  CORE.Window.render.width = CORE.Window.screen.width;
+  CORE.Window.render.height = CORE.Window.screen.height;
+  CORE.Window.currentFbo.width = CORE.Window.render.width;
+  CORE.Window.currentFbo.height = CORE.Window.render.height;
+
+  wresize(10, 10, w, h);
 
   TRACELOG(LOG_INFO, "PLATFORM: plan9: Initialized successfully");
 

@@ -136,10 +136,3 @@ ceilf(float f)
 {
   return ceil(f);
 }
-
-void
-sysfatal(char *s)
-{
-  fprintf(stderr, "fuck: %s", s);
-  abort();
-}
