@@ -13,6 +13,7 @@ typedef struct {
   uchar *rgbuf;
   PFcontext pctx;
   int wctlfd;
+  Image *img;
 } PlatformData;
 
 extern CoreData CORE;
@@ -322,22 +323,22 @@ redraw(void)
 
   int w = CORE.Window.screen.width, h = CORE.Window.screen.height;
   Rectangle r = Rect(0, 0, w, h);
-  Image *i = allocimage(display, r, RGB24, 0, 0);
-  if (i == nil) {
-    printf("allocimage err\n");
-    abort();
+  if (pdata.img == nil) {
+    pdata.img = allocimage(display, r, RGB24, 0, 0);
+    if (pdata.img == nil) {
+      printf("allocimage err\n");
+      abort();
+    }
   }
 
-  if (loadimage(i, i->r, (void*)pdata.rgbuf, w*h*3) < 0) {
+  if (loadimage(pdata.img, pdata.img->r, (void*)pdata.rgbuf, w*h*3) < 0) {
     printf("loadimage err\n");
     abort();
   }
 
   //drawop(screen, Rect(xr, yr, w+xr, h+yr), i, nil, i->r.min, 0);
-  draw(screen, Rect(xr, yr, w+xr, h+yr), i, nil, i->r.min);
+  draw(screen, Rect(xr, yr, w+xr, h+yr), pdata.img, nil, pdata.img->r.min);
   flushimage(display, 1);
-
-  freeimage(i);
 }
 
 void
@@ -496,6 +497,7 @@ InitPlatform(void)
   CORE.Window.fullscreen = false;
   CORE.Window.flags |= FLAG_FULLSCREEN_MODE;
 
+  pdata.img = nil;
   pdata.wctlfd = open("/dev/wctl", O_RDWR);
   pdata.rgbuf = malloc(w*h*3);
   pdata.pctx = pfCreateContext(pdata.rgbuf, CORE.Window.screen.width, CORE.Window.screen.height, PF_PIXELFORMAT_R8G8B8);
