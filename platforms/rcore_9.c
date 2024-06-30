@@ -403,10 +403,10 @@ SetGamepadMappings(const char *mappings)
 void
 SetMousePosition(int x, int y)
 {
+  CORE.Input.Mouse.previousPosition = CORE.Input.Mouse.currentPosition;
   CORE.Input.Mouse.currentPosition = (GETS(Vector2)) {
     (float)x, (float)y
   };
-  CORE.Input.Mouse.previousPosition = CORE.Input.Mouse.currentPosition;
 }
 
 // Set mouse cursor
