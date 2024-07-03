@@ -416,6 +416,10 @@ SetMouseCursor(int cursor)
   TRACELOG(LOG_WARNING, "SetMouseCursor() not implemented on target platform");
 }
 
+#define TOQUEUE(c) \
+  { CORE.Input.Keyboard.keyPressedQueue[CORE.Input.Keyboard.keyPressedQueueCount++] = c; \
+    if (isalpha(c)) CORE.Input.Keyboard.charPressedQueue[CORE.Input.Keyboard.charPressedQueueCount++] = c; }
+
 // Register all input events
 void
 PollInputEvents(void)
@@ -463,21 +467,27 @@ PollInputEvents(void)
       switch (e.kbdc) {
       case 27:
         CORE.Input.Keyboard.currentKeyState[KEY_ESCAPE] = 1;
+        TOQUEUE(KEY_ESCAPE);
         break;
       case 61457:
         CORE.Input.Keyboard.currentKeyState[KEY_LEFT] = 1;
+        TOQUEUE(KEY_LEFT);
         break;
       case 61458:
         CORE.Input.Keyboard.currentKeyState[KEY_RIGHT] = 1;
+        TOQUEUE(KEY_RIGHT);
         break;
       case 61454:
         CORE.Input.Keyboard.currentKeyState[KEY_UP] = 1;
+        TOQUEUE(KEY_UP);
         break;
       case 61488:
         CORE.Input.Keyboard.currentKeyState[KEY_DOWN] = 1;
+        TOQUEUE(KEY_DOWN);
         break;
       default:
         CORE.Input.Keyboard.currentKeyState[e.kbdc] = 1;
+        TOQUEUE(e.kbdc);
         break;
       }
 

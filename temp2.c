@@ -11,6 +11,10 @@ main(int argc, char **argv)
 
   SetTargetFPS(30);
   while (!WindowShouldClose()) {
+    int kp = GetKeyPressed();
+    if (kp) {
+      printf("KP: %d\n", kp);
+    }
     if (IsKeyDown('Q')) break;
     Vector2 mp = GetMousePosition();
     BeginDrawing();
